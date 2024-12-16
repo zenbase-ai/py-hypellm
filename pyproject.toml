@@ -1,18 +1,14 @@
 [project]
 name = "hypellm"
-version = "0.0.1"
+version = "0.0.2"
 description = "A toolkit for LLM data augmentation"
 authors = [{ name = "Cyrus Nouroozi", email = "cyrus@zenbase.ai" }]
-dependencies = [
-    "asyncer>=0.0.8",
-    "pydantic>=2.10.3",
-    "pydantic-settings>=2.7.0",
-]
+dependencies = ["asyncer==0.0.8", "pydantic>=2.0", "pydantic-settings>=2.0"]
 readme = "README.md"
 requires-python = ">= 3.8"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling==1.26.3", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.rye]

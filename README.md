@@ -20,6 +20,8 @@ rye add hypellm
 poetry add hypellm
 ```
 
+Note that you'll also need to install `instructor` as a peer dependency of `hypellm`, and is the default implementation.
+
 ## 🚀 Quick Start
 
 ```python
