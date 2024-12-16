@@ -1,5 +1,9 @@
 name: Test
 
+env:
+  HYPELLM_API_KEY: ${{ secrets.HYPELLM_API_KEY }}
+  HYPELLM_MODEL: ${{ secrets.HYPELLM_MODEL }}
+
 on:
   push:
     branches: [main]
