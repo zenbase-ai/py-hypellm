@@ -2,11 +2,11 @@ from collections import defaultdict
 from typing import Optional
 
 from hypellm.helpers import amap, pmap
-from hypellm import settings, Result, Prompt, DataModel
+from hypellm import settings, Example, Prompt, DataModel
 
 
 async def inferred(
-    data: list[Result],
+    data: list[Example],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> Prompt:
@@ -24,7 +24,7 @@ async def inferred(
 
 
 def inferred_sync(
-    data: list[Result],
+    data: list[Example],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> Prompt:
@@ -32,11 +32,11 @@ def inferred_sync(
 
 
 async def reasoned(
-    data: list[Result],
+    data: list[Example],
     branching_factor: int = 3,
     concurrency: Optional[int] = None,
     prompt: Optional[Prompt] = None,
-) -> tuple[Prompt, list[Result]]:
+) -> tuple[Prompt, list[Example]]:
     """
     Generate hypothetical reasoning steps for a list of input/output examples.
 
@@ -44,7 +44,6 @@ async def reasoned(
         data: List of input/output example pairs to generate reasoning for
         batch_size: Number of examples to process at once
         concurrency: Maximum number of parallel operations
-
     Returns:
         List of reasoning steps for each example in the input data
     """
@@ -52,20 +51,20 @@ async def reasoned(
 
 
 def reasoned_sync(
-    data: list[Result],
+    data: list[Example],
     branching_factor: int = 3,
     concurrency: Optional[int] = None,
     prompt: Optional[Prompt] = None,
-) -> tuple[Prompt, list[Result]]:
+) -> tuple[Prompt, list[Example]]:
     return settings.impl.reasoned_sync(data, branching_factor, concurrency, prompt)
 
 
 async def inverted(
-    data: list[Result],
+    data: list[Example],
     branching_factor: int = 3,
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
-) -> tuple[Prompt, list[Result]]:
+) -> tuple[Prompt, list[Example]]:
     """
     Given a list of input/output examples, infers a prompt that could have generated those inputs from those outputs.
 
@@ -80,18 +79,18 @@ async def inverted(
     Returns:
         A list of inverted Datum objects with the reasoning steps added
     """
-    inverted_data = [Result(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
+    inverted_data = [Example(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
     prompt = await inferred(inverted_data, batch_size, concurrency)
     return await reasoned(inverted_data, branching_factor, concurrency, prompt)
 
 
 def inverted_sync(
-    data: list[Result],
+    data: list[Example],
     branching_factor: int = 3,
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
-) -> tuple[Prompt, list[Result]]:
-    inverted_data = [Result(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
+) -> tuple[Prompt, list[Example]]:
+    inverted_data = [Example(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
     prompt = inferred_sync(inverted_data, batch_size, concurrency)
     return reasoned_sync(inverted_data, branching_factor, concurrency, prompt)
 
@@ -101,20 +100,21 @@ async def questions(
     concurrency: Optional[int] = None,
 ) -> dict[str, list[DataModel]]:
     """
-    Given a list of input/output examples, infers questions that can be answered by the examples.
+    Given a list of data, infers questions that can be answered by the data.
 
     This is useful for:
     - Improving lookup performance for a dataset
 
     Args:
-        data: List of input/output example pairs
+        data: List of data
         batch_size: Number of examples to process at once
         concurrency: Maximum number of parallel operations
 
     Returns:
-        A dictionary mapping each prototypical question to a list of data that contain the answer
+        A dictionary mapping each question to a list of data that contain the answer
     """
     response = defaultdict(list)
+
     for qs, answer in zip(
         await amap(settings.impl.questions, data, batch_size=1, concurrency=concurrency),
         data,
@@ -126,15 +126,11 @@ async def questions(
 
 
 def questions_sync(
-    data: list[DataModel], concurrency: Optional[int] = None
+    data: list[DataModel],
+    concurrency: Optional[int] = None,
 ) -> dict[str, list[DataModel]]:
-    """
-    Given a list of input/output examples, infers questions that can be answered by the examples.
-
-    This is the synchronous version of the questions function.
-    """
-    concurrency = concurrency or settings.concurrency
     response = defaultdict(list)
+
     for qs, answer in zip(
         pmap(settings.impl.questions_sync, data, batch_size=1, concurrency=concurrency),
         data,

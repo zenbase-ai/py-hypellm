@@ -1,6 +1,6 @@
 [project]
 name = "hypellm"
-version = "0.0.3"
+version = "0.0.4"
 description = "A toolkit for LLM data augmentation"
 authors = [{ name = "Cyrus Nouroozi", email = "cyrus@zenbase.ai" }]
 dependencies = ["asyncer==0.0.8", "pydantic>=2.0", "pydantic-settings>=2.0"]

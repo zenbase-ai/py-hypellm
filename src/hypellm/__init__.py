@@ -1,10 +1,10 @@
-from .types import Result, Prompt, ReasoningSteps, IO, DataModel
+from .types import Example, Prompt, ReasoningSteps, IO, DataModel
 from .settings import settings
 from . import recipes
 
 __all__ = [
     "DataModel",
-    "Result",
+    "Example",
     "IO",
     "Prompt",
     "ReasoningSteps",

@@ -4,14 +4,14 @@ from typing import Optional
 
 import ujson
 
-from hypellm import settings, DataModel, Prompt, ReasoningSteps, Result
+from hypellm import settings, DataModel, Prompt, ReasoningSteps, Example
 from hypellm.helpers import amap
 
 from .base import client
 
 
 async def inferred(
-    data: list[Result],
+    data: list[Example],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> Prompt:
@@ -42,7 +42,7 @@ async def inferred(
     return candidates[0]
 
 
-async def infer_prompt(examples: list[Result]) -> Prompt:
+async def infer_prompt(examples: list[Example]) -> Prompt:
     response: HypotheticalPrompt = await client.chat.completions.create(
         response_model=HypotheticalPrompt,
         temperature=0.42,
@@ -60,7 +60,7 @@ async def infer_prompt(examples: list[Result]) -> Prompt:
     return response.prompt
 
 
-async def combine_prompts(data: list[Result], prompts: list[Prompt]) -> Prompt:
+async def combine_prompts(data: list[Example], prompts: list[Prompt]) -> Prompt:
     data = sample(data, k=settings.batch_size)
     response: HypotheticalPrompt = await client.chat.completions.create(
         response_model=HypotheticalPrompt,

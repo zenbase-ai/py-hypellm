@@ -1,6 +1,6 @@
 from typing import Optional
 
-from hypellm import Prompt, Result, ReasoningSteps, IO
+from hypellm import Prompt, Example, ReasoningSteps, IO
 
 from .base import dspy, train_dev_split
 
@@ -12,7 +12,7 @@ class Function(dspy.Signature):
 
 
 def inferred_sync(
-    data: list[Result],
+    data: list[Example],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> Prompt:
@@ -26,7 +26,7 @@ def inferred_sync(
     return Prompt(
         intent=...,
         examples=[
-            Result(
+            Example(
                 inputs=example.inputs,
                 reasoning=example.reasoning_steps,
                 outputs=example.outputs,

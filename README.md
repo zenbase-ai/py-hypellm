@@ -31,13 +31,14 @@ Take a look at [recipes.py](src/hypellm/recipes.py) to learn what's available an
 
 import hypellm
 
-# Your training examples
+# Your training examples, simple strings or structured data
 data = [
-    hypellm.Result(
+    # Example(inputs: dict | str, reasoning: list[str], outputs: dict | str)
+    hypellm.Example(
         inputs="The patient presents with elevated troponin levels (0.8 ng/mL) and ST-segment depression, but no chest pain or dyspnea.",
         outputs="unstable_angina"
     ),
-    hypellm.Result(
+    hypellm.Example(
         inputs="Labs show WBC 15k/μL with 80% neutrophils, fever 39.2°C, and consolidation in right lower lobe on chest X-ray.",
         outputs="bacterial_pneumonia"
     )

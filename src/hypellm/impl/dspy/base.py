@@ -1,6 +1,6 @@
 import dspy
 
-from hypellm import settings, Result
+from hypellm import settings, Example
 
 lm = dspy.LM(
     model=settings.model,
@@ -13,8 +13,8 @@ dspy.configure(lm=lm, async_max_workers=settings.concurrency)
 
 
 def train_dev_split(
-    data: list[Result], test_size: float = 0.2
-) -> tuple[list[Result], list[Result]]:
+    data: list[Example], test_size: float = 0.2
+) -> tuple[list[Example], list[Example]]:
     import numpy as np
 
     np.random.seed(42)

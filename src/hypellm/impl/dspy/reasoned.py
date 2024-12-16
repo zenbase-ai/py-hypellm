@@ -2,7 +2,7 @@ from functools import partial
 from random import sample
 from typing import Optional
 
-from hypellm import Result, settings, ReasoningSteps, IO, DataModel, Prompt
+from hypellm import Example, settings, ReasoningSteps, IO, DataModel, Prompt
 from hypellm.helpers import pmap
 from .base import dspy
 from .inferred import inferred_sync
@@ -27,7 +27,7 @@ class Think(dspy.Signature):
     branches: ThoughtBranches = dspy.OutputField()
 
 
-def infill_reasoning(fn_prompt: Prompt, branching_factor: int, datum: Result) -> ReasoningSteps:
+def infill_reasoning(fn_prompt: Prompt, branching_factor: int, datum: Example) -> ReasoningSteps:
     branches: ThoughtBranches = dspy.Predict(Think)(
         prompt=fn_prompt,
         branching_factor=branching_factor,
@@ -38,10 +38,10 @@ def infill_reasoning(fn_prompt: Prompt, branching_factor: int, datum: Result) ->
 
 
 def reasoned_sync(
-    data: list[Result],
+    data: list[Example],
     branching_factor: int = 3,
     concurrency: Optional[int] = None,
-) -> list[Result]:
+) -> list[Example]:
     concurrency = concurrency or settings.concurrency
 
     sample_data = sample(data, k=settings.batch_size)
@@ -54,7 +54,7 @@ def reasoned_sync(
         concurrency=concurrency,
     )
     sample_examples = [
-        Result(
+        Example(
             inputs=datum.inputs,
             outputs=datum.outputs,
             reasoning=reasoning,

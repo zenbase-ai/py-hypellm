@@ -9,8 +9,8 @@ hypellm.settings.show_progress = False
 @pytest.fixture
 def mock_data():
     return [
-        hypellm.Result(inputs="What is 2+2?", outputs="4"),
-        hypellm.Result(inputs="What is the capital of France?", outputs="Paris"),
+        hypellm.Example(inputs="What is 2+2?", outputs="4"),
+        hypellm.Example(inputs="What is the capital of France?", outputs="Paris"),
     ]
 
 
@@ -29,7 +29,7 @@ async def test_reasoned(mock_data):
     prompt, results = await hypellm.recipes.reasoned(mock_data)
     assert len(results) == len(mock_data)
     assert all(example in results for example in prompt.examples)
-    assert all(isinstance(r, hypellm.Result) for r in results)
+    assert all(isinstance(r, hypellm.Example) for r in results)
     assert all(hasattr(r, "reasoning") for r in results)
     assert all(r.reasoning == ["step 1", "step 2", "step 3"] for r in results)
 
@@ -38,7 +38,7 @@ def test_reasoned_sync(mock_data):
     prompt, results = hypellm.recipes.reasoned_sync(mock_data)
     assert len(results) == len(mock_data)
     assert all(example in results for example in prompt.examples)
-    assert all(isinstance(r, hypellm.Result) for r in results)
+    assert all(isinstance(r, hypellm.Example) for r in results)
     assert all(hasattr(r, "reasoning") for r in results)
     assert all(r.reasoning == ["step 1", "step 2", "step 3"] for r in results)
 
