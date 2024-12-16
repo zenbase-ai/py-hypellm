@@ -1,6 +1,6 @@
 from typing import Optional
 
-from hypellm import Prompt, Datum, settings, ReasoningSteps, IO
+from hypellm import Prompt, Datum, ReasoningSteps, IO
 
 from .base import dspy, train_dev_split
 

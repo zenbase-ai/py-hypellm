@@ -1,6 +1,6 @@
 import sys
 from typing import Optional, TypeVar, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
@@ -15,11 +15,21 @@ ReasoningSteps = TypeVar("ReasoningSteps", bound=list[str])
 
 
 class DataModel(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
     def update(self, **kwargs) -> "DataModel":
         return self.model_copy(update=kwargs)
 
+    def dict(self, **kwargs) -> dict:
+        kwargs.setdefault("exclude_none", True)
+        return self.model_dump(**kwargs)
+
+    def json(self, **kwargs) -> str:
+        kwargs.setdefault("exclude_none", True)
+        return self.model_dump_json(**kwargs)
+
     def toDict(self) -> dict:
-        return self.model_dump(exclude_none=True)
+        return self.dict()
 
 
 class Datum(DataModel):

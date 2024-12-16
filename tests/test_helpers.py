@@ -77,7 +77,7 @@ async def test_amap_single_batch():
 async def test_amap_multi_batch():
     data = [1, 2, 3, 4]
     results = await amap(async_batch_add, data, batch_size=2)
-    assert results == [2, 3, 4, 5]
+    assert results == [[2, 3], [4, 5]]
 
 
 def test_pmap_single_batch():
@@ -89,7 +89,7 @@ def test_pmap_single_batch():
 def test_pmap_multi_batch():
     data = [1, 2, 3, 4]
     results = pmap(sync_batch_add, data, batch_size=2)
-    assert results == [2, 3, 4, 5]
+    assert results == [[2, 3], [4, 5]]
 
 
 @pytest.mark.parametrize(

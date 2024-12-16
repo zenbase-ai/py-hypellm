@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     batch_size: int = Field(default=5, ge=1)
     concurrency: int = Field(default=10, ge=1)
     show_progress: bool = True
-
+    log_level: str = "INFO"
     impl_name: str = Field(default="instructor", alias="impl")
 
     @property

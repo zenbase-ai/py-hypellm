@@ -2,11 +2,12 @@ from functools import partial
 from random import sample
 from typing import Optional
 
-from hypellm import settings
-from hypellm.helpers import amap
-from hypellm.types import Datum, Prompt
+import ujson
 
-from .base import client, reasoned_model
+from hypellm import settings, DataModel, Prompt, ReasoningSteps, Datum
+from hypellm.helpers import amap
+
+from .base import client
 
 
 async def inferred(
@@ -29,9 +30,6 @@ async def inferred(
     Returns:
         A single Prompt object that could generate the examples
     """
-    batch_size = batch_size or settings.batch_size
-    concurrency = concurrency or settings.concurrency
-
     candidates = await amap(infer_prompt, data, batch_size, concurrency)
     while len(candidates) > 1:
         candidates = await amap(
@@ -42,6 +40,55 @@ async def inferred(
         )
 
     return candidates[0]
+
+
+async def infer_prompt(examples: list[Datum]) -> Prompt:
+    response: HypotheticalPrompt = await client.chat.completions.create(
+        response_model=HypotheticalPrompt,
+        temperature=0.42,
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT.json(),
+            },
+            {
+                "role": "user",
+                "content": f"Here are several input/output examples. Create a prompt that could generate all of them:\n\n{ujson.dumps(examples)}",
+            },
+        ],
+    )
+    return response.prompt
+
+
+async def combine_prompts(data: list[Datum], prompts: list[Prompt]) -> Prompt:
+    data = sample(data, k=settings.batch_size)
+    response: HypotheticalPrompt = await client.chat.completions.create(
+        response_model=HypotheticalPrompt,
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT.json(),
+            },
+            {
+                "role": "user",
+                "content": f"Here are the prompts to combine:\n\n{ujson.dumps(prompts)}",
+            },
+            {
+                "role": "user",
+                "content": f"Here are the examples to generate:\n\n{ujson.dumps(data)}",
+            },
+            {
+                "role": "user",
+                "content": "Create a single prompt that could generate all of these examples.",
+            },
+        ],
+    )
+    return response.prompt
+
+
+class HypotheticalPrompt(DataModel):
+    reasoning_steps: ReasoningSteps
+    prompt: Prompt
 
 
 SYSTEM_PROMPT = Prompt(
@@ -66,44 +113,3 @@ SYSTEM_PROMPT = Prompt(
         "Formulate clear instructions that would produce these outputs",
     ],
 )
-
-
-async def infer_prompt(examples: list[Datum]) -> Prompt:
-    return await client.chat.completions.create(
-        response_model=reasoned_model(Prompt),
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": f"Here are several input/output examples. Create a prompt that could generate all of them:\n\n{examples}",
-            },
-        ],
-    )
-
-
-async def combine_prompts(data: list[Datum], prompts: list[Prompt]) -> Prompt:
-    data = sample(data, k=settings.batch_size)
-    return await client.chat.completions.create(
-        response_model=reasoned_model(Prompt),
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": f"Here are the prompts to combine:\n\n{prompts}",
-            },
-            {
-                "role": "user",
-                "content": f"Here are the examples to generate:\n\n{data}",
-            },
-            {
-                "role": "user",
-                "content": "Create a single prompt that could generate all of these examples.",
-            },
-        ],
-    )

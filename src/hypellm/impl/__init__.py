@@ -24,14 +24,14 @@ class Impl(Protocol):
     async def reasoned(
         data: list[Datum],
         branching_factor: int = 3,
-        batch_size: Optional[int] = None,
         concurrency: Optional[int] = None,
-    ) -> list[Datum]: ...
+        prompt: Optional[Prompt] = None,
+    ) -> tuple[Prompt, list[Datum]]: ...
 
     @staticmethod
     def reasoned_sync(
         data: list[Datum],
         branching_factor: int = 3,
-        batch_size: Optional[int] = None,
         concurrency: Optional[int] = None,
-    ) -> list[Datum]: ...
+        prompt: Optional[Prompt] = None,
+    ) -> tuple[Prompt, list[Datum]]: ...

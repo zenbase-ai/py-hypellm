@@ -1,7 +1,7 @@
 import instructor
 import litellm
 
-from hypellm import settings, DataModel, ReasoningSteps
+from hypellm import settings
 
 client = instructor.from_litellm(
     litellm.acompletion,
@@ -10,11 +10,3 @@ client = instructor.from_litellm(
     api_version=settings.api_version,
     base_url=settings.base_url,
 )
-
-
-def reasoned_model(result_type: type) -> type[DataModel]:
-    class Result(DataModel):
-        reasoning_steps: ReasoningSteps
-        result: result_type
-
-    return Result

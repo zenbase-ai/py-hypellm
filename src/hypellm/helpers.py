@@ -75,21 +75,18 @@ async def amap(
 
     if batch_size == 1:
 
-        async def handle_batch(batch: list[Datum]) -> list[T_Retval]:
+        async def handle_batch(batch: list[Datum]) -> T_Retval:
             async with semaphore:
-                result = await func(batch[0])
-                return [result]
+                return await func(batch[0])
     else:
 
-        async def handle_batch(batch: list[Datum]) -> list[T_Retval]:
+        async def handle_batch(batch: list[Datum]) -> T_Retval:
             async with semaphore:
-                results = await func(batch)
-                return results
+                return await func(batch)
 
-    results = await gather(
+    return await gather(
         [handle_batch(data[i : i + batch_size]) for i in range(0, len(data), batch_size)]
     )
-    return [result for batch in results for result in batch]
 
 
 def pmap(
@@ -108,12 +105,12 @@ def pmap(
 
     if batch_size == 1:
 
-        def handle_batch(batch: list[Datum]) -> list[T_Retval]:
-            return [func(batch[0])]
+        def handle_batch(batch: list[Datum]) -> T_Retval:
+            return func(batch[0])
 
     else:
 
-        def handle_batch(batch: list[Datum]) -> list[T_Retval]:
+        def handle_batch(batch: list[Datum]) -> T_Retval:
             return func(batch)
 
     with ThreadPoolExecutor(max_workers=concurrency) as pool:
@@ -127,6 +124,4 @@ def pmap(
         else:
             futures = batch_tasks
 
-        results = [f.result() for f in futures]
-
-    return [result for batch in results for result in batch]
+        return [f.result() for f in futures]
