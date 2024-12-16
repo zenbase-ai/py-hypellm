@@ -1,0 +1,49 @@
+[project]
+name = "hypellm"
+version = "0.0.1"
+description = "A toolkit for LLM data augmentation"
+authors = [{ name = "Cyrus Nouroozi", email = "cyrus@zenbase.ai" }]
+dependencies = [
+    "asyncer>=0.0.8",
+    "pydantic>=2.10.3",
+    "pydantic-settings>=2.7.0",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "ipdb>=0.13.13",
+    "ipython>=8.30.0",
+    "instructor>=1.7.0",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.0",
+    "ruff>=0.8.3",
+    "tox>=4.23.2",
+    "hypothesis>=6.122.3",
+    "anthropic>=0.40.0",
+    "tqdm>=4.67.1",
+    "dspy>=2.5.43",
+    "litellm==1.53.7",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hypellm"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.project.optional-dependencies]
+dev = ["tox", "tox-gh-actions"]
+
+[tool.ruff]
+line-length = 100
