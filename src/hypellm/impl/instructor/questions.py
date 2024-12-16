@@ -1,15 +1,15 @@
-from hypellm.types import Datum, Prompt, DataModel, ReasoningSteps
+from hypellm.types import Prompt, DataModel, ReasoningSteps
 
 from .base import client
 
 
-async def questions(datum: Datum) -> list[str]:
+async def questions(d: DataModel) -> list[str]:
     response: HypotheticalQuestions = await client.chat.completions.create(
         response_model=HypotheticalQuestions,
         temperature=0.7,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT.json()},
-            {"role": "user", "content": datum.json()},
+            {"role": "user", "content": d.json()},
         ],
     )
     return response.questions

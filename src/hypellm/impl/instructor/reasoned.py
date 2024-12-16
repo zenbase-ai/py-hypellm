@@ -3,18 +3,18 @@ from typing import Optional
 from random import sample
 
 from hypellm.helpers import amap
-from hypellm import IO, Datum, Prompt, ReasoningSteps, DataModel, settings
+from hypellm import IO, Result, Prompt, ReasoningSteps, DataModel, settings
 
 from .inferred import inferred
 from .base import client
 
 
 async def reasoned(
-    data: list[Datum],
+    data: list[Result],
     branching_factor: int = 3,
     concurrency: Optional[int] = None,
     prompt: Optional[Prompt] = None,
-) -> tuple[Prompt, list[Datum]]:
+) -> tuple[Prompt, list[Result]]:
     """
     Generate hypothetical reasoning steps for a list of input/output examples.
 
@@ -61,7 +61,7 @@ async def reasoned(
     remaining_data = [data[i] for i in remaining_indices]
     few_shot_prompt = prompt.update(
         examples=[
-            Datum(
+            Result(
                 inputs=datum.inputs,
                 outputs=datum.outputs,
                 reasoning=reasoning,
@@ -87,7 +87,7 @@ async def reasoned(
 
 
 async def infill_reasoning(
-    fn_prompt: Prompt, branching_factor: int, datum: Datum
+    fn_prompt: Prompt, branching_factor: int, datum: Result
 ) -> ReasoningSteps:
     user_prompt = Prompt(
         intent="Find the best reasoning trajectory to go from the inputs to the outputs.",

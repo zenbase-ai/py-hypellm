@@ -1,16 +1,14 @@
-# 🚀 HypeLLM: The Ultimate LLM Data Augmentation Toolkit
+# 🚀 HypeLLM: Hypothetical LLM Data Augmentation
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Want to supercharge your LLM's training data? Meet `hypellm` - your go-to toolkit for LLM data augmentation that turns good data into great data! 🎯✨
 
 ## 🌟 Features
 
 - 🎮 **Recipe-Based Augmentation**: Pre-built recipes for common augmentation patterns
 - 🔄 **Multiple Strategies**: Infer patterns, add reasoning, generate questions, and more
 - 🎯 **Async & Sync Support**: Choose between async or sync APIs based on your needs
-- ⚡ **Flexible Implementation**: Swap between different LLM backends (instructor, custom implementations)
+- ⚡ **Flexible Implementation**: Swap between different LLM backends (instructor, dspy, etc.)
 
 ## 🛠️ Installation
 
@@ -20,9 +18,11 @@ rye add hypellm
 poetry add hypellm
 ```
 
-Note that you'll also need to install `instructor` as a peer dependency of `hypellm`, and is the default implementation.
+Note that out of the box, you'll also need to install `instructor` as a peer dependency of `hypellm`, as it is the default implementation.
 
 ## 🚀 Quick Start
+
+Take a look at [recipes.py](src/hypellm/recipes.py) to learn what's available and how they work.
 
 ```python
 # env vars:
@@ -33,8 +33,14 @@ import hypellm
 
 # Your training examples
 data = [
-    hypellm.Datum(inputs="What is 2+2?", outputs="4"),
-    hypellm.Datum(inputs="What is the capital of France?", outputs="Paris"),
+    hypellm.Result(
+        inputs="The patient presents with elevated troponin levels (0.8 ng/mL) and ST-segment depression, but no chest pain or dyspnea.",
+        outputs="unstable_angina"
+    ),
+    hypellm.Result(
+        inputs="Labs show WBC 15k/μL with 80% neutrophils, fever 39.2°C, and consolidation in right lower lobe on chest X-ray.",
+        outputs="bacterial_pneumonia"
+    )
 ]
 
 # Choose your implementation
@@ -59,39 +65,15 @@ async def augment_examples():
 
     # Generate questions from different angles
     questions = await hypellm.recipes.questions(data)
-    for category, q_list in questions.items():
-        print(f"{category}: {q_list}")
+    for question, data_that_answers_question in questions.items():
+        print(f"{question}: {data_that_answers_question}")
 
     # Invert input/output pairs
     prompt, inverted = await hypellm.recipes.inverted(data)
+    print(f"Inverted prompt: {prompt}")
     for result in inverted:
-        print(f"Original: {result.outputs} -> {result.inputs}")
-```
-
-### Synchronous API
-
-```python
-from hypellm import Datum
-
-# Create your dataset
-medical_data = [
-    Datum(
-        inputs="The patient presents with elevated troponin levels (0.8 ng/mL) and ST-segment depression, but no chest pain or dyspnea.",
-        outputs="unstable_angina"
-    ),
-    Datum(
-        inputs="Labs show WBC 15k/μL with 80% neutrophils, fever 39.2°C, and consolidation in right lower lobe on chest X-ray.",
-        outputs="bacterial_pneumonia"
-    )
-]
-
-# Use sync API for simpler workflows
-prompt, results = hypellm.recipes.reasoned_sync(medical_data)
-print(prompt)
-for result in results:
-    print(f"Case: {result.inputs}")
-    print(f"Reasoning Steps: {result.reasoning}")
-    print(f"Diagnosis: {result.outputs}")
+        print(f"Original: {result.outputs} -> [{result.reasoning}] -> {result.inputs}")
+        print(f"Inverted: {result.inputs} -> [{result.reasoning}] -> {result.outputs}")
 ```
 
 ## 🤝 Contributing

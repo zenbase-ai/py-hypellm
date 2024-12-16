@@ -1,7 +1,7 @@
 from typing import Optional
 
 from hypellm.helpers import asyncify
-from hypellm.types import Datum, Prompt
+from hypellm.types import Result, Prompt
 
 
 basic_prompt = Prompt(
@@ -13,7 +13,7 @@ basic_prompt = Prompt(
 
 
 def inferred_sync(
-    data: list[Datum],
+    data: list[Result],
     batch_size: int,
     concurrency: Optional[int] = None,
 ) -> Prompt:
@@ -23,7 +23,7 @@ def inferred_sync(
 inferred = asyncify(inferred_sync)
 
 
-def questions_sync(data: Datum) -> list[str]:
+def questions_sync(data: Result) -> list[str]:
     return ["What is the main concept?", "How does this work?", "Why is this important?"]
 
 
@@ -31,11 +31,11 @@ questions = asyncify(questions_sync)
 
 
 def reasoned_sync(
-    data: list[Datum],
+    data: list[Result],
     branching_factor: int = 3,
     concurrency: Optional[int] = None,
     prompt: Optional[Prompt] = None,
-) -> tuple[Prompt, list[Datum]]:
+) -> tuple[Prompt, list[Result]]:
     reasoned_data = [
         d.update(reasoning=[f"step {i+1}" for i in range(branching_factor)]) for d in data
     ]

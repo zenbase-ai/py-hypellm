@@ -1,4 +1,4 @@
-from hypellm import IO, Datum
+from hypellm import IO, Result
 
 from .base import dspy, lm
 
@@ -32,7 +32,7 @@ class Questions(dspy.Signature):
     questions: list[str] = dspy.OutputField()
 
 
-def questions_sync(datum: Datum) -> list[str]:
+def questions_sync(datum: Result) -> list[str]:
     with dspy.configure(lm=lm.copy(temperature=0.7)):
         return dspy.ChainOfThought(Questions)(outputs=datum.outputs).questions
 

@@ -33,6 +33,13 @@ class DataModel(BaseModel):
 
 
 class Datum(DataModel):
+    value: IO
+
+    def __init__(self, value: IO, **kwargs):
+        super().__init__(value=value, **kwargs)
+
+
+class Result(DataModel):
     inputs: IO
     reasoning: Optional[ReasoningSteps] = Field(default=None)
     outputs: IO
@@ -79,7 +86,7 @@ class Prompt(DataModel):
     reasoning_steps: Optional[list[str]] = Field(
         description="Step-by-step process the model should use to arrive at the answer"
     )
-    examples: Optional[list[Datum]] = Field(
+    examples: Optional[list[Result]] = Field(
         description="Sample input-output pairs demonstrating desired behavior"
     )
 
@@ -90,7 +97,7 @@ class Prompt(DataModel):
         dos: Optional[list[str]] = None,
         donts: Optional[list[str]] = None,
         reasoning_steps: Optional[list[str]] = None,
-        examples: Optional[list[Datum]] = None,
+        examples: Optional[list[Result]] = None,
         **kwargs,
     ):
         super().__init__(

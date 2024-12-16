@@ -12,7 +12,7 @@ except ImportError:
     tqdm = None
 
 from hypellm.settings import settings
-from hypellm.types import Datum, T_ParamSpec, T_Retval
+from hypellm.types import Result, T_ParamSpec, T_Retval
 
 
 def syncify(
@@ -59,7 +59,7 @@ async def gather(
 
 async def amap(
     func: Callable[T_ParamSpec, Coroutine[Any, Any, T_Retval]],
-    data: list[Datum],
+    data: list[Result],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> list[T_Retval]:
@@ -75,12 +75,12 @@ async def amap(
 
     if batch_size == 1:
 
-        async def handle_batch(batch: list[Datum]) -> T_Retval:
+        async def handle_batch(batch: list[Result]) -> T_Retval:
             async with semaphore:
                 return await func(batch[0])
     else:
 
-        async def handle_batch(batch: list[Datum]) -> T_Retval:
+        async def handle_batch(batch: list[Result]) -> T_Retval:
             async with semaphore:
                 return await func(batch)
 
@@ -91,7 +91,7 @@ async def amap(
 
 def pmap(
     func: Callable[T_ParamSpec, T_Retval],
-    data: list[Datum],
+    data: list[Result],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> list[T_Retval]:
@@ -105,12 +105,12 @@ def pmap(
 
     if batch_size == 1:
 
-        def handle_batch(batch: list[Datum]) -> T_Retval:
+        def handle_batch(batch: list[Result]) -> T_Retval:
             return func(batch[0])
 
     else:
 
-        def handle_batch(batch: list[Datum]) -> T_Retval:
+        def handle_batch(batch: list[Result]) -> T_Retval:
             return func(batch)
 
     with ThreadPoolExecutor(max_workers=concurrency) as pool:

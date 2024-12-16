@@ -2,18 +2,18 @@ import pytest
 
 import ujson
 
-from hypellm.types import Datum, Prompt
+from hypellm.types import Result, Prompt
 
 
 def test_datum_initialization():
     # Test with just inputs and outputs
-    datum = Datum(inputs="test input", outputs="test output")
+    datum = Result(inputs="test input", outputs="test output")
     assert datum.inputs == "test input"
     assert datum.outputs == "test output"
     assert datum.reasoning is None
 
     # Test with reasoning steps
-    datum = Datum(
+    datum = Result(
         inputs="test input",
         reasoning_or_outputs=["step 1", "step 2"],
         outputs_or_none="test output",
@@ -23,13 +23,13 @@ def test_datum_initialization():
     assert datum.outputs == "test output"
 
     # Test with dict inputs/outputs
-    datum = Datum(inputs={"key": "input"}, outputs={"key": "output"})
+    datum = Result(inputs={"key": "input"}, outputs={"key": "output"})
     assert datum.inputs == {"key": "input"}
     assert datum.outputs == {"key": "output"}
 
 
 def test_datum_methods():
-    datum = Datum(inputs="test", outputs="test")
+    datum = Result(inputs="test", outputs="test")
 
     # Test update method
     updated = datum.update(inputs="new input")
@@ -50,7 +50,7 @@ def test_prompt_initialization():
     assert prompt.examples is None
 
     # Test full initialization
-    examples = [Datum(inputs="test", outputs="test")]
+    examples = [Result(inputs="test", outputs="test")]
     prompt = Prompt(
         intent="test intent",
         dos=["do this"],
@@ -79,15 +79,15 @@ def test_prompt_methods():
 def test_invalid_types():
     # Test invalid input type
     with pytest.raises(ValueError):
-        Datum(inputs=123, outputs="test")  # type: ignore
+        Result(inputs=123, outputs="test")  # type: ignore
 
     # Test invalid output type
     with pytest.raises(ValueError):
-        Datum(inputs="test", outputs=123)  # type: ignore
+        Result(inputs="test", outputs=123)  # type: ignore
 
     # Test invalid reasoning steps type
     with pytest.raises(ValueError):
-        Datum(
+        Result(
             inputs="test",
             reasoning_or_outputs="not a list",  # type: ignore
             outputs_or_none="test",

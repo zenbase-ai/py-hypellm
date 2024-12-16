@@ -2,11 +2,11 @@ from collections import defaultdict
 from typing import Optional
 
 from hypellm.helpers import amap, pmap
-from hypellm import settings, Datum, Prompt
+from hypellm import settings, Result, Prompt, DataModel
 
 
 async def inferred(
-    data: list[Datum],
+    data: list[Result],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> Prompt:
@@ -24,7 +24,7 @@ async def inferred(
 
 
 def inferred_sync(
-    data: list[Datum],
+    data: list[Result],
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> Prompt:
@@ -32,11 +32,11 @@ def inferred_sync(
 
 
 async def reasoned(
-    data: list[Datum],
+    data: list[Result],
     branching_factor: int = 3,
     concurrency: Optional[int] = None,
     prompt: Optional[Prompt] = None,
-) -> tuple[Prompt, list[Datum]]:
+) -> tuple[Prompt, list[Result]]:
     """
     Generate hypothetical reasoning steps for a list of input/output examples.
 
@@ -52,20 +52,20 @@ async def reasoned(
 
 
 def reasoned_sync(
-    data: list[Datum],
+    data: list[Result],
     branching_factor: int = 3,
     concurrency: Optional[int] = None,
     prompt: Optional[Prompt] = None,
-) -> tuple[Prompt, list[Datum]]:
+) -> tuple[Prompt, list[Result]]:
     return settings.impl.reasoned_sync(data, branching_factor, concurrency, prompt)
 
 
 async def inverted(
-    data: list[Datum],
+    data: list[Result],
     branching_factor: int = 3,
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
-) -> tuple[Prompt, list[Datum]]:
+) -> tuple[Prompt, list[Result]]:
     """
     Given a list of input/output examples, infers a prompt that could have generated those inputs from those outputs.
 
@@ -80,26 +80,26 @@ async def inverted(
     Returns:
         A list of inverted Datum objects with the reasoning steps added
     """
-    inverted_data = [Datum(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
+    inverted_data = [Result(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
     prompt = await inferred(inverted_data, batch_size, concurrency)
     return await reasoned(inverted_data, branching_factor, concurrency, prompt)
 
 
 def inverted_sync(
-    data: list[Datum],
+    data: list[Result],
     branching_factor: int = 3,
     batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
-) -> tuple[Prompt, list[Datum]]:
-    inverted_data = [Datum(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
+) -> tuple[Prompt, list[Result]]:
+    inverted_data = [Result(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
     prompt = inferred_sync(inverted_data, batch_size, concurrency)
     return reasoned_sync(inverted_data, branching_factor, concurrency, prompt)
 
 
 async def questions(
-    data: list[Datum],
+    data: list[DataModel],
     concurrency: Optional[int] = None,
-) -> dict[str, list[Datum]]:
+) -> dict[str, list[DataModel]]:
     """
     Given a list of input/output examples, infers questions that can be answered by the examples.
 
@@ -125,7 +125,9 @@ async def questions(
     return response
 
 
-def questions_sync(data: list[Datum], concurrency: Optional[int] = None) -> dict[str, list[Datum]]:
+def questions_sync(
+    data: list[DataModel], concurrency: Optional[int] = None
+) -> dict[str, list[DataModel]]:
     """
     Given a list of input/output examples, infers questions that can be answered by the examples.
 
