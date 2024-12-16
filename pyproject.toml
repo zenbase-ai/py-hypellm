@@ -30,6 +30,7 @@ dev-dependencies = [
     "tqdm>=4.67.1",
     "dspy>=2.5.43",
     "litellm==1.53.7",
+    "pytest-mock>=3.14.0",
 ]
 
 [tool.hatch.metadata]

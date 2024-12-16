@@ -19,11 +19,13 @@ class Settings(BaseSettings):
     concurrency: int = Field(default=10, ge=1)
     show_progress: bool = True
 
-    impl_: str = Field(default="instructor", alias="impl")
+    impl_name: str = Field(default="instructor", alias="impl")
 
     @property
     def impl(self) -> "Impl":
-        return import_module(f"hypellm.impl.{self.impl_}")
+        return import_module(
+            self.impl_name if "." in self.impl_name else f"hypellm.impl.{self.impl_name}",
+        )
 
 
 settings = Settings()
