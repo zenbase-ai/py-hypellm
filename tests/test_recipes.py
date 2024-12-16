@@ -46,9 +46,6 @@ def test_reasoned_sync(mock_data):
 @pytest.mark.asyncio
 async def test_inverted(mock_data):
     prompt, results = await hypellm.recipes.inverted(mock_data)
-    import ipdb
-
-    ipdb.set_trace()
     assert prompt.intent == "inferred intent"
     assert all(example in results for example in prompt.examples)
     assert len(results) == len(mock_data)
