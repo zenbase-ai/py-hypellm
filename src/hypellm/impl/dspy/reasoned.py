@@ -57,7 +57,7 @@ def reasoned_sync(
         Datum(
             inputs=datum.inputs,
             outputs=datum.outputs,
-            reasoning_steps=reasoning,
+            reasoning=reasoning,
         )
         for datum, reasoning in zip(sample_data, sample_reasonings)
     ]

@@ -26,7 +26,6 @@ async def inferred(
 async def reasoned(
     data: list[Datum],
     branching_factor: int = 3,
-    batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> list[Datum]:
     """
@@ -40,21 +39,20 @@ async def reasoned(
     Returns:
         List of reasoning steps for each example in the input data
     """
-    return await settings.impl.reasoned(data, branching_factor, batch_size, concurrency)
+    return await settings.impl.reasoned(data, branching_factor, concurrency)
 
 
 def reasoned_sync(
     data: list[Datum],
     branching_factor: int = 3,
-    batch_size: Optional[int] = None,
     concurrency: Optional[int] = None,
 ) -> list[Datum]:
-    return settings.impl.reasoned_sync(data, branching_factor, batch_size, concurrency)
+    return settings.impl.reasoned_sync(data, branching_factor, concurrency)
 
 
 async def inverted(
     data: list[Datum],
-    batch_size: Optional[int] = None,
+    branching_factor: int = 3,
     concurrency: Optional[int] = None,
 ) -> list[Datum]:
     """
@@ -72,14 +70,16 @@ async def inverted(
         A list of inverted Datum objects with the reasoning steps added
     """
     inverted_data = [Datum(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
-    return await reasoned(inverted_data, batch_size, concurrency)
+    return await reasoned(inverted_data, branching_factor, concurrency)
 
 
 def inverted_sync(
-    data: list[Datum], batch_size: Optional[int] = None, concurrency: Optional[int] = None
+    data: list[Datum],
+    branching_factor: int = 3,
+    concurrency: Optional[int] = None,
 ) -> list[Datum]:
     inverted_data = [Datum(inputs=datum.outputs, outputs=datum.inputs) for datum in data]
-    return reasoned_sync(inverted_data, batch_size, concurrency)
+    return reasoned_sync(inverted_data, branching_factor, concurrency)
 
 
 async def questions(

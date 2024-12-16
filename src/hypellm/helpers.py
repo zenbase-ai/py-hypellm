@@ -6,8 +6,8 @@ import anyio
 import asyncer
 
 try:
-    import tqdm
-    import tqdm.asyncio
+    from tqdm import tqdm
+    from tqdm.asyncio import tqdm_asyncio
 except ImportError:
     tqdm = None
 
@@ -25,11 +25,10 @@ def syncify(
 def asyncify(
     sync_function: Callable[T_ParamSpec, T_Retval],
     *,
-    abandon_on_cancel: bool = False,
     cancellable: Union[bool, None] = None,
     limiter: Optional[anyio.CapacityLimiter] = None,
 ) -> Callable[T_ParamSpec, Coroutine[Any, Any, T_Retval]]:
-    return asyncer.asyncify(sync_function, abandon_on_cancel, cancellable, limiter)
+    return asyncer.asyncify(sync_function, cancellable=cancellable, limiter=limiter)
 
 
 async def as_completed(
@@ -37,10 +36,13 @@ async def as_completed(
     *,
     timeout: Optional[float] = None,
 ) -> AsyncIterator[tuple[int, T_Retval]]:
-    if settings.show_progress and tqdm is not None:
-        return tqdm.asyncio.as_completed(tasks, timeout=timeout, total=len(tasks))
+    if settings.show_progress and tqdm_asyncio is not None:
+        generator = tqdm_asyncio.as_completed(tasks, timeout=timeout, total=len(tasks))
     else:
-        return asyncio.as_completed(tasks, timeout=timeout)
+        generator = asyncio.as_completed(tasks, timeout=timeout)
+
+    for coro in generator:
+        yield await coro
 
 
 async def gather(
@@ -48,18 +50,24 @@ async def gather(
     *,
     timeout: Optional[float] = None,
 ) -> list[T_Retval]:
-    if settings.show_progress and tqdm is not None:
-        return tqdm.asyncio.gather(tasks, timeout=timeout, total=len(tasks))
-    else:
-        return asyncio.gather(tasks, timeout=timeout)
+    with anyio.move_on_after(timeout):
+        if settings.show_progress and tqdm_asyncio is not None:
+            return await tqdm_asyncio.gather(*tasks, total=len(tasks))
+        else:
+            return await asyncio.gather(*tasks)
 
 
 async def amap(
     func: Callable[T_ParamSpec, Coroutine[Any, Any, T_Retval]],
     data: list[Datum],
-    batch_size: int = 5,
-    concurrency: int = 10,
+    batch_size: Optional[int] = None,
+    concurrency: Optional[int] = None,
 ) -> list[T_Retval]:
+    if batch_size is None:
+        batch_size = settings.batch_size
+    if concurrency is None:
+        concurrency = settings.concurrency
+
     assert batch_size > 0, "batch_size must be greater than 0"
     assert concurrency > 0, "concurrency must be greater than 0"
 
@@ -87,9 +95,14 @@ async def amap(
 def pmap(
     func: Callable[T_ParamSpec, T_Retval],
     data: list[Datum],
-    batch_size: int = 5,
-    concurrency: int = 10,
+    batch_size: Optional[int] = None,
+    concurrency: Optional[int] = None,
 ) -> list[T_Retval]:
+    if batch_size is None:
+        batch_size = settings.batch_size
+    if concurrency is None:
+        concurrency = settings.concurrency
+
     assert batch_size > 0, "batch_size must be greater than 0"
     assert concurrency > 0, "concurrency must be greater than 0"
 
@@ -103,14 +116,14 @@ def pmap(
         def handle_batch(batch: list[Datum]) -> list[T_Retval]:
             return func(batch)
 
-    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+    with ThreadPoolExecutor(max_workers=concurrency) as pool:
         batch_tasks = [
-            executor.submit(handle_batch, data[i : i + batch_size])
+            pool.submit(handle_batch, data[i : i + batch_size])
             for i in range(0, len(data), batch_size)
         ]
 
         if settings.show_progress and tqdm is not None:
-            futures = tqdm.tqdm(batch_tasks, total=len(batch_tasks))
+            futures = tqdm(batch_tasks, total=len(batch_tasks))
         else:
             futures = batch_tasks
 

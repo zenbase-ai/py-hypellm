@@ -28,7 +28,7 @@ def inferred_sync(
         examples=[
             Datum(
                 inputs=example.inputs,
-                reasoning_steps=example.reasoning_steps,
+                reasoning=example.reasoning_steps,
                 outputs=example.outputs,
             )
             for example in best_fn.demos

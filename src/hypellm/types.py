@@ -19,48 +19,58 @@ class DataModel(BaseModel):
         return self.model_copy(update=kwargs)
 
     def toDict(self) -> dict:
-        return self.model_dump()
+        return self.model_dump(exclude_none=True)
 
 
 class Datum(DataModel):
     inputs: IO
-    reasoning_steps: Optional[ReasoningSteps] = Field(default=None)
+    reasoning: Optional[ReasoningSteps] = Field(default=None)
     outputs: IO
 
     def __init__(
         self,
         inputs: IO,
-        reasoning_or_outputs: Union[IO, ReasoningSteps],
+        reasoning_or_outputs: Union[IO, ReasoningSteps] = None,
         outputs_or_none: Optional[IO] = None,
+        *,
+        reasoning: Optional[ReasoningSteps] = None,
+        outputs: Optional[IO] = None,
         **kwargs,
     ):
-        if outputs_or_none is None:
-            reasoning_steps = None
-            outputs = reasoning_or_outputs
-        else:
-            reasoning_steps = reasoning_or_outputs
-            outputs = outputs_or_none
+        """
+        Convenient way to initialize a Datum.
 
-        super().__init__(inputs=inputs, reasoning_steps=reasoning_steps, outputs=outputs, **kwargs)
+        args:
+            Datum(inputs, reasoning, outputs)
+            Datum(inputs, outputs)
+        kwargs:
+            Datum(inputs=..., reasoning=..., outputs=...)
+            Datum(inputs=..., outputs=...)
+        """
+        if reasoning is None and outputs is None:
+            if outputs_or_none is None:
+                reasoning = None
+                outputs = reasoning_or_outputs
+            else:
+                reasoning = reasoning_or_outputs
+                outputs = outputs_or_none
+
+        super().__init__(inputs=inputs, reasoning=reasoning, outputs=outputs, **kwargs)
 
 
 class Prompt(DataModel):
     intent: str = Field(description="The core purpose or goal of this prompt")
-    dos: list[str] = Field(
-        description="List of specific instructions the model should follow",
-        default_factory=list,
+    dos: Optional[list[str]] = Field(
+        description="List of specific instructions the model should follow"
     )
-    donts: list[str] = Field(
-        description="List of behaviors or outputs the model should avoid",
-        default_factory=list,
+    donts: Optional[list[str]] = Field(
+        description="List of behaviors or outputs the model should avoid"
     )
-    reasoning_steps: list[str] = Field(
-        description="Step-by-step process the model should use to arrive at the answer",
-        default_factory=list,
+    reasoning_steps: Optional[list[str]] = Field(
+        description="Step-by-step process the model should use to arrive at the answer"
     )
-    examples: list[Datum] = Field(
-        description="Sample input-output pairs demonstrating desired behavior",
-        default_factory=list,
+    examples: Optional[list[Datum]] = Field(
+        description="Sample input-output pairs demonstrating desired behavior"
     )
 
     def __init__(
@@ -75,9 +85,9 @@ class Prompt(DataModel):
     ):
         super().__init__(
             intent=intent,
-            dos=dos or [],
-            donts=donts or [],
-            reasoning_steps=reasoning_steps or [],
-            examples=examples or [],
+            dos=dos,
+            donts=donts,
+            reasoning_steps=reasoning_steps,
+            examples=examples,
             **kwargs,
         )
